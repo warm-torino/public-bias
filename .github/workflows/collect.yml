@@ -1,0 +1,46 @@
+name: collect
+
+on:
+  schedule:
+    - cron: "5 * * * *"   # 毎時05分（UTC）。00分は混雑で遅延しやすいため避ける
+  workflow_dispatch:       # Actions 画面から手動実行も可能
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: Collect
+        run: python collector.py
+        env:
+          MYFXBOOK_EMAIL: ${{ secrets.MYFXBOOK_EMAIL }}
+          MYFXBOOK_PASSWORD: ${{ secrets.MYFXBOOK_PASSWORD }}
+          OANDA_TOKEN: ${{ secrets.OANDA_TOKEN }}
+
+      - name: Commit CSV
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/*.csv
+          if git diff --cached --quiet; then
+            echo "no changes"
+            exit 0
+          fi
+          git commit -m "data $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase
+          git push
