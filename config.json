@@ -1,0 +1,14 @@
+{
+  "symbols": ["EURUSD", "GBPUSD", "AUDUSD", "USDJPY", "EURJPY", "GBPJPY", "EURAUD", "XAUUSD"],
+
+  "myfxbook": {},
+
+  "oanda": {
+    "env": "live",
+    "instruments": { "XAUUSD": "XAU_USD" }
+  },
+
+  "weights": { "myfxbook": 1.0, "oanda": 1.0 },
+
+  "output_dir": "data"
+}
